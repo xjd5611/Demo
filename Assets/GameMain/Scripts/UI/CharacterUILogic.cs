@@ -11,21 +11,19 @@ using GameFramework.Event;
 public class CharacterUILogic : UIFormLogic
 {
     private RoleData m_role;
-    private MonsterData m_monster;
+    private MstData[] m_msts;
 
-    private Image HPBar_Role;
-    private Text HPText_Role;
+    private GameObject m_RoleUI;
+    private GameObject[] m_mstsUI;
 
-    private Image HpBar_Monster;
-    private Text HPText_Monster;
+    private GameObject tagetArrow;
 
     protected override void OnInit(object userData)
     {
         base.OnInit(userData);
-        HPBar_Role = transform.Find("HPBG_Role").Find("HPBar").GetComponent<Image>();
-        HPText_Role = transform.Find("HPBG_Role").Find("HPText").GetComponent<Text>();
-        HpBar_Monster = transform.Find("HPBG_Enemy").Find("HPBar").GetComponent<Image>();
-        HPText_Monster = transform.Find("HPBG_Enemy").Find("HPText").GetComponent<Text>();
+        m_RoleUI = transform.Find("UnitUI").gameObject;
+        tagetArrow = transform.Find("TargetArrow").gameObject;
+        tagetArrow.SetActive(false);
     }
 
     protected override void OnOpen(object userData)
@@ -33,19 +31,86 @@ public class CharacterUILogic : UIFormLogic
         base.OnOpen(userData); 
 
         m_role = GameEntry.DataNode.GetData<VarRoleData>(Definition.Node.RoleNode).Value;
-        m_monster = GameEntry.DataNode.GetData<VarMonsterData>(Definition.Node.MonsterNode).Value;
+        m_msts = GameEntry.DataNode.GetData<VarMstsData>(Definition.Node.MstsNode).Value;
 
-        GameEntry.Event.Subscribe(UpdateUIEvent.EventId, UpdateUI);
-        GameEntry.Event.Fire(this, UpdateUIEvent.Create());
+        UnitUIInit();
+
+        GameEntry.Event.Subscribe(MouseEnterMst.EventId, OnMouseEnterMst);
+        GameEntry.Event.Subscribe(MouseExitMst.EventId, OnMouseExitMst);
+        GameEntry.Event.Subscribe(MouseOverMst.EventId, OnMouseOverMst);
+        GameEntry.Event.Subscribe(UpdateUnitUIEvent.EventId, UpdateUnitUI);
+        GameEntry.Event.Fire(this, UpdateUnitUIEvent.Create());
 
     }
 
-    private void UpdateUI(object sender, GameEventArgs e)
+    protected override void OnClose(bool isShutdown, object userData)
     {
-        HPBar_Role.fillAmount = m_role.CurHP * 1.0f / m_role.HPMax;
-        HPText_Role.text = string.Format("{0}/{1}", m_role.CurHP, m_role.HPMax);
-        HpBar_Monster.fillAmount = m_monster.CurHP * 1.0f / m_monster.HPMax;
-        HPText_Monster.text = string.Format("{0}/{1}", m_monster.CurHP, m_monster.HPMax);
+        base.OnClose(isShutdown, userData);
+
+        for (int i = 0; i < m_mstsUI.Length; i++)
+        {
+            Destroy(m_mstsUI[i].gameObject);
+        }
+
+        GameEntry.Event.Unsubscribe(MouseEnterMst.EventId, OnMouseEnterMst);
+        GameEntry.Event.Unsubscribe(MouseExitMst.EventId, OnMouseExitMst);
+        GameEntry.Event.Unsubscribe(MouseOverMst.EventId, OnMouseOverMst);
+        GameEntry.Event.Unsubscribe(UpdateUnitUIEvent.EventId, UpdateUnitUI);
+    }
+
+
+    private void OnMouseExitMst(object sender, GameEventArgs e)
+    {
+        tagetArrow.SetActive(false);
+    }
+
+    private void OnMouseEnterMst(object sender, GameEventArgs e)
+    {
+        tagetArrow.SetActive(true);
+    }
+
+    private void OnMouseOverMst(object sender, GameEventArgs e)
+    {
+        Vector3 posInUI = Camera.main.WorldToScreenPoint(((GameObject)sender).transform.position + new Vector3(0,2,0));
+        tagetArrow.transform.position = posInUI;
+    }
+
+    private void UnitUIInit()
+    {
+        m_RoleUI.transform.position = WorldToUGUIPosition(GetComponent<RectTransform>(), m_role.Position) - new Vector2(0, 150);
+        m_mstsUI = new GameObject[m_msts.Length];
+        for (int i = 0; i < m_msts.Length; i++)
+        {
+            m_mstsUI[i] = Instantiate(m_RoleUI, transform);
+            m_mstsUI[i].transform.position = WorldToUGUIPosition(GetComponent<RectTransform>(), m_msts[i].Position) - new Vector2(0, 150);
+        }
+    }
+
+    private Vector3 WorldPointToUILocalPoint(Vector3 point)
+    {
+        //将世界坐标转为屏幕坐标
+        Vector3 screenPoint = Camera.main.WorldToScreenPoint(point);
+
+        //将屏幕坐标转换到RectTransform的局部坐标中
+        Vector2 uiPosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(transform.GetComponent<RectTransform>(), screenPoint, Camera.main, out uiPosition);
+        return uiPosition;
+    }
+
+    private Vector2 WorldToUGUIPosition(RectTransform rectTransform ,Vector3 worldPos)
+    {
+        Vector2 viewPos = Camera.main.WorldToViewportPoint(worldPos);
+        return new Vector2(rectTransform.rect.width * viewPos.x,
+            rectTransform.rect.height * viewPos.y);
+    }
+
+    private void UpdateUnitUI(object sender, GameEventArgs e)
+    {
+        m_RoleUI.GetComponent<UnitUI>().SetUnitHP(m_role.CurHP, m_role.HPMax);
+        for (int i = 0; i < m_mstsUI.Length; i++)
+        {
+            m_mstsUI[i].GetComponent<UnitUI>().SetUnitHP(m_msts[i].CurHP, m_msts[i].HPMax);
+        }
     }
 
     protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
@@ -53,10 +118,6 @@ public class CharacterUILogic : UIFormLogic
         base.OnUpdate(elapseSeconds, realElapseSeconds);
     }
 
-    protected override void OnClose(bool isShutdown, object userData)
-    {
-        base.OnClose(isShutdown, userData);
-        GameEntry.Event.Unsubscribe(UpdateUIEvent.EventId, UpdateUI);
-    }
+
 
 }

@@ -4,26 +4,26 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class VarAttackCardData : Variable<AttackCardData>
+public class VarAttackCardData : Variable<AtkCardData>
 {
     public VarAttackCardData(int entityId, int typeId)
     {
-        Value = new AttackCardData(entityId, typeId);
+        Value = new AtkCardData(entityId, typeId);
     }
 }
 
-public class VarDefenseCardData : Variable<DefenseCardData>
+public class VarDefenseCardData : Variable<DefCardData>
 {
     public VarDefenseCardData(int entityId, int typeId)
     {
-        Value = new DefenseCardData(entityId, typeId);
+        Value = new DefCardData(entityId, typeId);
     }
 }
 
-public class VarSkillCardData : Variable<SkillCardData>
+public class VarSkillCardData : Variable<SkiCardData>
 {
     public VarSkillCardData(int entityId, int typeId)
     {
-        Value = new SkillCardData(entityId, typeId);
+        Value = new SkiCardData(entityId, typeId);
     }
 }

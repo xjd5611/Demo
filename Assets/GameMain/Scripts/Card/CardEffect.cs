@@ -5,7 +5,6 @@ using UnityEngine;
 public static class CardEffect
 {
 
-
     public static void CardInit(this CardLogicBase card)
     {
 
@@ -21,14 +20,14 @@ public static class CardEffect
     /// </summary>
     /// <param name="cardLogic"></param>
     /// <param name="cardData"></param>
-    public static void TakeDemage(this AttackCardLogic card, object cardData)
+    public static void TakeDemage(this AtkCardLogic card, object cardData)
     {
-        card.monsterData.TakeDemage(card.m_AttackCardData.Demage);
+        card.mstData.TakeDemage(card.m_AtkCardData.Demage);
     }
 
-    public static void AddActions(this AttackCardLogic card, object cardData)
+    public static void AddActions(this AtkCardLogic card, object cardData)
     {
-        string actionStr = card.m_AttackCardData.Actions;
+        string actionStr = card.m_AtkCardData.Actions;
 
         string[] splitStr1 = actionStr.Split('|');
         if(splitStr1.Length > 0)
@@ -38,7 +37,24 @@ public static class CardEffect
                 string[] splitStr2 = splitStr1[i].Split('*');
                 if(splitStr2.Length == 2)
                 {
-                    Definition.Enum.ActionType actionType = (Definition.Enum.ActionType)int.Parse(splitStr2[0]);
+                    Definition.Enum.ActionType actionType = Definition.Enum.ActionType.unknown;
+                    switch (splitStr2[0])
+                    {
+                        case "µ„":
+                            actionType = Definition.Enum.ActionType.µ„;
+                            break;
+                        case "¥Ã":
+                            actionType = Definition.Enum.ActionType.¥Ã;
+                            break;
+                        case "≈¸":
+                            actionType = Definition.Enum.ActionType.≈¸;
+                            break;
+                        case "…®":
+                            actionType = Definition.Enum.ActionType.…®;
+                            break;
+                        default:
+                            break;
+                    }
                     int count = int.Parse(splitStr2[1]);
                     card.actionData.AddAct(actionType, count);
                 }
@@ -47,9 +63,52 @@ public static class CardEffect
     }
 
 
-    #region Additional Effect
+    #region Card Effects
+    public static void NoEffect(CardLogicBase m_CardLogic, int value)
+    {
 
-    public static void HurtSelf(this AttackCardLogic card)
+    }
+
+    public static void AtkOppo(CardLogicBase m_CardLogic, int value)
+    {
+
+    }
+
+    public static void MulAtk(CardLogicBase m_CardLogic, int value)
+    {
+
+    }
+
+    public static void AtkSelf(CardLogicBase m_CardLogic, int value)
+    {
+        GameEntry.GameManager.m_role.TakeDemage(value);
+    }
+
+    public static void SelfBlood(CardLogicBase m_CardLogic, int value)
+    {
+
+    }
+
+    public static void OppoBlood(CardLogicBase m_CardLogic, int value)
+    {
+
+    }
+
+    /// <summary>
+    /// –È’≈…˘ ∆
+    /// </summary>
+    /// <param name="card"></param>
+    public static void Bravado(CardLogicBase m_CardLogic, int value)
+    {
+
+    }
+
+    public static void DrawCard(CardLogicBase m_CardLogic, int value)
+    {
+
+    }
+
+    public static void CreateCards(CardLogicBase m_CardLogic, int value)
     {
 
     }

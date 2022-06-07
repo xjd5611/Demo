@@ -27,9 +27,18 @@ public class TurnEnd : EventArgs<TurnEnd> { }
 /// <summary>
 /// 鼠标进入卡牌范围
 /// </summary>
-public class MouseEnter : EventArgs<MouseEnter> { }
-public class MouseExit : EventArgs<MouseExit> { }
+public class MouseEnterCard : EventArgs<MouseEnterCard> { }
+public class MouseExitCard : EventArgs<MouseExitCard> { }
+public class MouseDownCard : EventArgs<MouseDownCard> { }
+public class MouseUpCard : EventArgs<MouseUpCard> { }
+public class MouseDragCard : EventArgs<MouseDragCard> { }
 
+/// <summary>
+/// 鼠标进入怪兽范围
+/// </summary>
+public class MouseOverMst : EventArgs<MouseOverMst> { }
+public class MouseEnterMst : EventArgs<MouseEnterMst> { }
+public class MouseExitMst : EventArgs<MouseExitMst> { }
 
 /// <summary>
 /// 卡牌打出时
@@ -55,7 +64,10 @@ public class MonsterTakeDemage : EventArgs<MonsterTakeDemage>
 /// <summary>
 /// 卡牌生效时（视觉上）更新UI
 /// </summary>
-public class UpdateUIEvent : EventArgs<UpdateUIEvent> { }
+public class UpdateUnitUIEvent : EventArgs<UpdateUnitUIEvent> 
+{
+
+}
 
 
 public class ActorSelectedEvent : EventArgs<ActorSelectedEvent> { }
@@ -63,7 +75,7 @@ public class ActorSelectedEvent : EventArgs<ActorSelectedEvent> { }
 /// <summary>
 /// 敌方采取行动
 /// </summary>
-public class MonsterTakeActionEvent : EventArgs<MonsterTakeActionEvent> { }
+public class MstTakeActionEvent : EventArgs<MstTakeActionEvent> { }
 
 public class MonsterTakeActionCompletedEvent : EventArgs<MonsterTakeActionCompletedEvent> { }
 

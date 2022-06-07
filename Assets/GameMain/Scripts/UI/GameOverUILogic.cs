@@ -8,8 +8,11 @@ using UnityEngine.UI;
 public class GameOverUILogic : UIFormLogic
 {
     private Button restartBtn;
+    private Button nextStoreyBtn;
     private GameObject youWinTitle;
     private GameObject youLoseTitle;
+
+    private StoreyData curStorey;
 
     protected override void OnInit(object userData)
     {
@@ -25,7 +28,20 @@ public class GameOverUILogic : UIFormLogic
 
         restartBtn.onClick.AddListener(() =>
         {
+            StoreyData newStorey = new StoreyData(1);
+            GameEntry.DataNode.SetData<VarStoreyData>(Definition.Node.StoreyNode, newStorey);
             GameEntry.Event.Fire(this, RestartEvent.Create());
+        });
+
+        nextStoreyBtn = transform.Find("Menu").Find("NextStoreyBtn").GetComponent<Button>();
+        nextStoreyBtn.onClick.AddListener(() =>
+        {
+            if (!curStorey.IsTop)
+            {
+                StoreyData newStorey = new StoreyData(curStorey.typeId + 1);
+                GameEntry.DataNode.SetData<VarStoreyData>(Definition.Node.StoreyNode, newStorey);
+                GameEntry.Event.Fire(this, RestartEvent.Create());
+            }
         });
     }
 
@@ -35,7 +51,8 @@ public class GameOverUILogic : UIFormLogic
         bool isWin = (bool)userData;
         youWinTitle.SetActive(isWin);
         youLoseTitle.SetActive(!isWin);
-    }
 
-    
+        curStorey = GameEntry.DataNode.GetData<VarStoreyData>(Definition.Node.StoreyNode);
+        nextStoreyBtn.interactable = !curStorey.IsTop;
+    }   
 }

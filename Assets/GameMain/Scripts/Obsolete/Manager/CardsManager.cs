@@ -98,7 +98,7 @@ public class CardsManager : UIFormLogic
             };
             m_Sequence.Append(tween);
         }
-        GameEntry.Event.Fire(this, UpdateUIEvent.Create());
+        //GameEntry.Event.Fire(this, UpdateUnitUIEvent.Create());
     }
 
     /// <summary>
@@ -113,7 +113,7 @@ public class CardsManager : UIFormLogic
             cardsInDesk[i] = cardsInDesk[r];
             cardsInDesk[r] = temp;
         }
-        GameEntry.Event.Fire(this, UpdateUIEvent.Create());
+        //GameEntry.Event.Fire(this, UpdateUnitUIEvent.Create());
     }
 
     /// <summary>
@@ -127,7 +127,7 @@ public class CardsManager : UIFormLogic
         }
         cardsInGrave.RemoveAll(it => true);
         Shuffle();
-        GameEntry.Event.Fire(this, UpdateUIEvent.Create());
+        //GameEntry.Event.Fire(this, UpdateUnitUIEvent.Create());
     }
 
     private void OnGUI()

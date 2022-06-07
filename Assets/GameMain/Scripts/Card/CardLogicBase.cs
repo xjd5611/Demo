@@ -5,6 +5,7 @@ using GameFramework.Entity;
 using UnityGameFramework.Runtime;
 using UnityEngine.UI;
 using UnityEngine.Events;
+using System;
 
 public class CardLogicBase : EntityLogic
 {
@@ -14,7 +15,7 @@ public class CardLogicBase : EntityLogic
     protected Text cardType;
 
     public RoleData roleData { get; private set; }
-    public MonsterData monsterData { get; private set; }
+    public MstData mstData { get; private set; }
     public ActionData actionData { get; private set; }
 
     public Definition.Enum.CardType m_CardType = Definition.Enum.CardType.Unknown;
@@ -22,12 +23,6 @@ public class CardLogicBase : EntityLogic
     public int m_CardCost = 0;
 
     public Definition.Enum.CardState m_CardState = Definition.Enum.CardState.Unknown;
-
-
-    private void OnMouseEnter() => OnMouseEnterCard();
-    private void OnMouseDown() => OnMouseDownCard();
-    private void OnMouseExit() => OnMouseExitCard();
-    private void OnMouseDrag() => OnMouseDownCard();
 
     protected UnityAction<object> BeforeTakeEffect;
     protected UnityAction<object> TakeEffect;
@@ -49,7 +44,8 @@ public class CardLogicBase : EntityLogic
     protected override void OnShow(object userData)
     {
         base.OnShow(userData);
-        monsterData = GameEntry.DataNode.GetData<VarMonsterData>(Definition.Node.MonsterNode);
+        roleData = GameEntry.DataNode.GetData<VarRoleData>(Definition.Node.RoleNode);
+        //monsterData = GameEntry.DataNode.GetData<VarMstsData>(Definition.Node.MstsNode);
         actionData = GameEntry.DataNode.GetNode(Definition.Node.ActionDataNode).GetData<VarActionData>().Value;
 
         BeforeTakeEffect = null;
@@ -57,19 +53,40 @@ public class CardLogicBase : EntityLogic
         AfterTakeEffect = null;
     }
 
-    protected virtual void OnMouseEnterCard()
+    private void OnMouseEnter() 
     {
         if (m_CardState == Definition.Enum.CardState.InHands)
-            GameEntry.Event.Fire(this.gameObject, MouseEnter.Create());
+            GameEntry.Event.Fire(this.gameObject, MouseEnterCard.Create());
     }
 
-    protected virtual void OnMouseExitCard()
+    private void OnMouseExit()
     {
         if (m_CardState == Definition.Enum.CardState.InHands)
-            GameEntry.Event.Fire(this.gameObject, MouseExit.Create());
+            GameEntry.Event.Fire(this.gameObject, MouseExitCard.Create());
     }
-    protected virtual void OnMouseDownCard()
+
+
+    private void OnMouseDown() 
     {
+        //Debug.Log("OnMouseDown : " + this.Entity.Id);        
+        if (m_CardState == Definition.Enum.CardState.InHands)
+            GameEntry.Event.Fire(this.gameObject, MouseDownCard.Create());
+    }
+
+
+    private void OnMouseUp()
+    {
+        //Debug.Log("OnMouseUp : " + this.Entity.Id);
+        if (m_CardState == Definition.Enum.CardState.InHands)
+            GameEntry.Event.Fire(this.gameObject, MouseUpCard.Create());
+
+        if(GameEntry.GameManager.targetMst == null)
+        {
+            return;
+        }
+
+        mstData = GameEntry.GameManager.targetMst;
+
         if (cantPlay())
             return;
 
@@ -81,12 +98,19 @@ public class CardLogicBase : EntityLogic
         m_CardState = Definition.Enum.CardState.InGrave;
     }
 
+    private void OnMouseDrag()
+    {
+        //Debug.Log("OnMouseDrag : " + this.Entity.Id);
+        if (m_CardState == Definition.Enum.CardState.InHands)
+            GameEntry.Event.Fire(this.gameObject, MouseDragCard.Create());
+    }
+
     protected virtual bool cantPlay()
     {
         return m_CardState != Definition.Enum.CardState.InHands || 
             !actionData.CanCost(m_CardCost) ||
             !GameEntry.GameManager.isPlayerTurn||
-            GameEntry.Procedure.CurrentProcedure != GameEntry.Procedure.GetProcedure<ProcedureAction>();
+            GameEntry.Procedure.CurrentProcedure != GameEntry.Procedure.GetProcedure<ProcAction>();
     }
 
     /// <summary>

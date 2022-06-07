@@ -45,15 +45,17 @@ public static partial class Definition
         public const string GraveCardsNode = "GraveCardsNode";
 
         public const string RoleNode = "RoleNode";
-        public const string MonsterNode = "MonsterNode";
+        public const string MstsNode = "MstsNode";
         public const string ActionDataNode = "ActionDataNode";
         public const string GameDataNode = "TurnDataNode";
         public const string MonsterAINode = "MonsterAINode";
+
+        public const string StoreyNode = "StoreyNode";
     }
 
     public static class Enum 
     {
-        public enum ActionType {µã, ´Ì,Åü ,É¨}
+        public enum ActionType { unknown,µã, ´Ì,Åü ,É¨}
         public enum CardType
         {
             Unknown,

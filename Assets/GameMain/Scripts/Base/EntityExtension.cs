@@ -35,26 +35,26 @@ public static class EntityExtension
 
     public static void CreateMonsterEntity(this EntityComponent entityComponent, int entityId, object monsterData)
     {
-        MonsterData data = monsterData as MonsterData;
+        MstData data = monsterData as MstData;
         string assetPath = CharacterPath(data.TypeId);
         string group = Definition.Group.CharacterGroup;
-        GameEntry.Entity.ShowEntity<MonsterAIBase>(entityId, assetPath, group, monsterData);
+        GameEntry.Entity.ShowEntity<MstAIBase>(entityId, assetPath, group, monsterData);
         //GameEntry.Entity.AttachEntity(id, parentId);
     }
 
-    public static void CreateAttackCardEntity(this EntityComponent entityComponent, int entityId, AttackCardData cardData)
+    public static void CreateAttackCardEntity(this EntityComponent entityComponent, int entityId, AtkCardData cardData)
     {
-        GameEntry.Entity.ShowEntity<AttackCardLogic>(entityId, Definition.AssetPath.Card, Definition.Group.Cards, cardData);
+        GameEntry.Entity.ShowEntity<AtkCardLogic>(entityId, Definition.AssetPath.Card, Definition.Group.Cards, cardData);
     }
 
-    public static void CreateDefenseCardEntity(this EntityComponent entityComponent, int entityId, DefenseCardData cardData)
+    public static void CreateDefenseCardEntity(this EntityComponent entityComponent, int entityId, DefCardData cardData)
     {
-        GameEntry.Entity.ShowEntity<DefenseCardLogic>(entityId, Definition.AssetPath.Card, Definition.Group.Cards, cardData);
+        GameEntry.Entity.ShowEntity<SkiCardLogic>(entityId, Definition.AssetPath.Card, Definition.Group.Cards, cardData);
     }
 
-    public static void CreateSkillCardEntity(this EntityComponent entityComponent, int entityId, SkillCardData cardData)
+    public static void CreateSkillCardEntity(this EntityComponent entityComponent, int entityId, SkiCardData cardData)
     {
-        GameEntry.Entity.ShowEntity<SkillCardLogic>(entityId, Definition.AssetPath.Card, Definition.Group.Cards, cardData);
+        GameEntry.Entity.ShowEntity<MagCardLogic>(entityId, Definition.AssetPath.Card, Definition.Group.Cards, cardData);
     }
 
     public static void ShowGetHitEntity(this EntityComponent entityComponent, Vector3 position, bool FlipX, bool FlipY)

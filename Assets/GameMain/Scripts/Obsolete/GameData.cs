@@ -8,12 +8,12 @@ using System.Linq;
 public class GameData 
 {
     public RoleData m_Role;
-    public MonsterData m_Monster;
+    public MstData m_Monster;
 
     public Dictionary<CharacterData, bool> m_actDic;
     public CharacterData actCharacter { get; private set; }
 
-    public GameData(RoleData m_Role, MonsterData m_Monster)
+    public GameData(RoleData m_Role, MstData m_Monster)
     {
         this.m_Role = m_Role;
         this.m_Monster = m_Monster;
@@ -53,7 +53,7 @@ public class GameData
 
 public class VarGameData : Variable<GameData>
 {
-    public VarGameData(RoleData m_Role, MonsterData m_Monster)
+    public VarGameData(RoleData m_Role, MstData m_Monster)
     {
         Value = new GameData(m_Role, m_Monster);
     }

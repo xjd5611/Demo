@@ -27,9 +27,13 @@ public class GameManager : GameFrameworkComponent
 
     private bool initSuccess = false;
 
-    private CharacterData m_actor;
-    private CharacterData m_role;
-    private CharacterData m_monster;
+    public RoleData m_role { get; private set; }
+    public MstData[] m_msts { get; private set; }
+    public GameObject targetMstGO { get; private set; }
+    public MstData targetMst { get; private set; }
+
+    public CharacterData m_actor { get; private set; }
+    public Dictionary<CharacterData, bool> m_actDic;
 
     private ActionData m_actionData;
 
@@ -47,7 +51,32 @@ public class GameManager : GameFrameworkComponent
         //GameEntry.Event.Subscribe(CardCreatInDesk.EventId, OnCardCreateInDesk);
         GameEntry.Event.Subscribe(CardDeterminedEvent.EventId, OnCardDetermined);
         GameEntry.Event.Subscribe(GameSettlement.EventId, OnGameSettlement);
+
+        GameEntry.Event.Subscribe(MouseEnterCard.EventId, OnMouseEnterCard);
+        GameEntry.Event.Subscribe(MouseExitCard.EventId, OnMouseExitCard);
+
+        GameEntry.Event.Subscribe(MouseEnterMst.EventId, OnMouseEnterMst);
+        GameEntry.Event.Subscribe(MouseExitMst.EventId, OnMouseExitMst);
         //GameEntry.Event.Subscribe(GameOverEvent.EventId, OnGameOver);
+    }
+
+    private void OnMouseExitMst(object sender, GameEventArgs e)
+    {
+        GameObject targetGO = sender as GameObject;
+        MstAIBase mst = targetGO.GetComponent<MstAIBase>();
+        if(mst.m_mstData == targetMst)
+        {
+            targetMst = null;
+            targetMstGO = null;
+        }
+    }
+
+    private void OnMouseEnterMst(object sender, GameEventArgs e)
+    {
+        GameObject targetGO = sender as GameObject;
+        MstAIBase mst = targetGO.GetComponent<MstAIBase>();
+        targetMst = mst.m_mstData;
+        targetMstGO = targetGO;
     }
 
     /// <summary>
@@ -63,7 +92,15 @@ public class GameManager : GameFrameworkComponent
         GetDeskCards();
 
         m_role = GameEntry.DataNode.GetData<VarRoleData>(Definition.Node.RoleNode);
-        m_monster = GameEntry.DataNode.GetData<VarMonsterData>(Definition.Node.MonsterNode);
+        m_msts = GameEntry.DataNode.GetData<VarMstsData>(Definition.Node.MstsNode);
+
+        m_actDic = new Dictionary<CharacterData, bool>();
+        m_actDic.Add(m_role, false);
+        for (int i = 0; i < m_msts.Length; i++)
+        {
+
+            m_actDic.Add(m_msts[i], false);
+        }
 
         m_Sequence = DOTween.Sequence();
         m_Sequence.SetAutoKill(false);
@@ -77,8 +114,13 @@ public class GameManager : GameFrameworkComponent
         {
             GameEntry.Event.Fire(false, GameOverEvent.Create());
         }
-        else if (m_monster.isDead)
+        else
         {
+            for (int i = 0; i < m_msts.Length; i++)
+            {
+                if (!m_msts[i].isDead)
+                    return;
+            }
             GameEntry.Event.Fire(true, GameOverEvent.Create());
         }
     }
@@ -94,6 +136,20 @@ public class GameManager : GameFrameworkComponent
 
     private int[] cardsId = new int[] {10001,10002,10003,10004,
             10005,10006,11001,11002,11003,12002,12003,12004,19001};
+
+
+    private GameObject focusCard;
+    private void OnMouseEnterCard(object sender, GameEventArgs e)
+    {
+        focusCard = sender as GameObject;
+    }
+
+    private void OnMouseExitCard(object sender, GameEventArgs e)
+    {
+        GameObject card = sender as GameObject;
+        if (card == focusCard)
+            focusCard = null;
+    }
 
     private void Update()
     {
@@ -132,13 +188,14 @@ public class GameManager : GameFrameworkComponent
         //card.transform.SetParent(cardUseTF);
         Tween tween = card.transform.DOMove(cardUseTF.position, 1f);
         Tween tween1 = card.transform.DOMove(graveTF.position, 1f);
+        GameObject tempTarget = targetMstGO;
         tween.onComplete = () =>
         {
             if (card.GetComponent<CardLogicBase>().m_CardType == Definition.Enum.CardType.AttackCard)
             {
-                GameEntry.Event.Fire(this, MonsterTakeDemage.Create());
+                GameEntry.Event.Fire(tempTarget, MonsterTakeDemage.Create());
             }
-            GameEntry.Event.Fire(this, UpdateUIEvent.Create());
+            GameEntry.Event.Fire(this, UpdateUnitUIEvent.Create());
             //m_handCards.RemoveCard(card);
             //m_graveCards.AddCard(card);
         };
@@ -166,14 +223,10 @@ public class GameManager : GameFrameworkComponent
             child.transform.rotation = Quaternion.Euler(0, 0, -angle);
         }
 
-        //for (int i = 0; i < handTF.childCount; i++)
-        //{
-        //    GameObject child = handTF.GetChild(i).gameObject;
-        //    float angle = -angleStep * (handTF.childCount - 1) + i * 2 * angleStep;
-        //    child.transform.position = handTF.position + new Vector3(Mathf.Sin(angle * Mathf.Deg2Rad) * radius,
-        //        Mathf.Cos(angle * Mathf.Deg2Rad) * radius - radius, 100 + i);
-        //    child.transform.rotation = Quaternion.Euler(0, 0, -angle);
-        //}
+        if(focusCard != null)
+        {
+            focusCard.transform.position = new Vector3(focusCard.transform.position.x, focusCard.transform.position.y, 99);
+        }
     }
 
     /// <summary>
@@ -279,14 +332,49 @@ public class GameManager : GameFrameworkComponent
     /// 是否为玩家回合
     /// </summary>
     public bool isPlayerTurn => m_actor == m_role;
-
+   
     /// <summary>
     /// 重新选择回合行动者
     /// </summary>
     public void SelectActor()
     {
-        m_actor = isPlayerTurn ? m_monster : m_role;
-        GameEntry.Event.Fire(this, ActorSelectedEvent.Create());
+        if (m_actDic.ContainsValue(false))
+        {
+            if (m_actDic[m_role])
+            {
+                for (int i = 0; i < m_msts.Length; i++)
+                {
+                    if (!m_actDic[m_msts[i]])
+                    {
+                        m_actor = m_msts[i];
+                        m_actDic[m_msts[i]] = true;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                m_actor = m_role;
+                m_actDic[m_actor] = true;
+            }
+        }
+        else
+        {
+            ResetActDic();
+            m_actor = m_role;
+            m_actDic[m_actor] = true;
+        }
+
+        GameEntry.Event.Fire(m_actor.Id, ActorSelectedEvent.Create());
+    }
+
+    private void ResetActDic()
+    {
+        m_actDic[m_role] = false;
+        for (int i = 0; i < m_msts.Length; i++)
+        {
+            m_actDic[m_msts[i]] = false;
+        }
     }
 
     public void ResetPower()
@@ -295,6 +383,4 @@ public class GameManager : GameFrameworkComponent
     }
 
     #endregion
-
-    
 }

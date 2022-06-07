@@ -16,7 +16,7 @@ namespace StarForce.Editor.DataTableTools
         [MenuItem("Tools/Generate DataTables")]
         private static void GenerateDataTables()
         {
-            foreach (string dataTableName in ProcedureLoadDataTable.DataTableNames)
+            foreach (string dataTableName in ProcLoadDataTable.DataTableNames)
             {
                 DataTableProcessor dataTableProcessor = DataTableGenerator.CreateDataTableProcessor(dataTableName);
                 if (!DataTableGenerator.CheckRawData(dataTableProcessor, dataTableName))
