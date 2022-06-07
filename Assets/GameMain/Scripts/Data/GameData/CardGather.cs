@@ -170,7 +170,6 @@ public class CardGather
         GameObject card = m_cards[0];
         m_cards.Remove(card);
         return card;
-
     }
 
     public void RemoveCard(GameObject card)

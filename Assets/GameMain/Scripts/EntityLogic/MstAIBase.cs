@@ -12,6 +12,7 @@ public class MstAIBase : EntityLogic
     private RoleData m_roleData;
     private int weightSum;
 
+    private SpriteRenderer mstSprite;
     private GameObject actorBG;
 
     protected override void OnInit(object userData)
@@ -25,6 +26,7 @@ public class MstAIBase : EntityLogic
             transform.position = m_mstData.Position;
         }
 
+        mstSprite = GetComponent<SpriteRenderer>();
         actorBG = transform.Find("ActorBG").gameObject;
         actorBG.SetActive(false);
     }
@@ -51,6 +53,7 @@ public class MstAIBase : EntityLogic
     protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
     {
         base.OnUpdate(elapseSeconds, realElapseSeconds);
+        mstSprite.enabled = !m_mstData.isDead;
     }
 
     private void OnActorSelected(object sender, GameEventArgs e)

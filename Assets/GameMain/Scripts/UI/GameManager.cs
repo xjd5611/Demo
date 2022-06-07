@@ -185,6 +185,7 @@ public class GameManager : GameFrameworkComponent
         m_Sequence = DOTween.Sequence();
         GameObject card = sender as GameObject;
         m_handCards.RemoveCard(card);
+        m_graveCards.AddCard(card);
         //card.transform.SetParent(cardUseTF);
         Tween tween = card.transform.DOMove(cardUseTF.position, 1f);
         Tween tween1 = card.transform.DOMove(graveTF.position, 1f);
@@ -201,8 +202,8 @@ public class GameManager : GameFrameworkComponent
         };
         tween1.onComplete = () =>
         {
-            m_graveCards.AddCard(card);
             //card.transform.SetParent(graveTF);
+            card.transform.localEulerAngles = Vector3.zero;
             card.SetActive(false);
         };
         m_Sequence.Append(tween);
@@ -338,29 +339,38 @@ public class GameManager : GameFrameworkComponent
     /// </summary>
     public void SelectActor()
     {
-        if (m_actDic.ContainsValue(false))
+        List<MstData> aliveMst = new List<MstData>();
+        for (int i = 0; i < m_msts.Length; i++)
         {
-            if (m_actDic[m_role])
+            if (!m_msts[i].isDead)
             {
-                for (int i = 0; i < m_msts.Length; i++)
+                aliveMst.Add(m_msts[i]);
+            }
+        }
+
+        bool isSelected = false;
+        if (m_actDic[m_role])
+        {
+            for (int i = 0; i < aliveMst.Count; i++)
+            {
+                if (!m_actDic[aliveMst[i]])
                 {
-                    if (!m_actDic[m_msts[i]])
-                    {
-                        m_actor = m_msts[i];
-                        m_actDic[m_msts[i]] = true;
-                        break;
-                    }
+                    m_actor = aliveMst[i];
+                    m_actDic[aliveMst[i]] = true;
+                    isSelected = true;
+                    break;
                 }
             }
-            else
+
+            if (!isSelected)
             {
+                ResetActDic();
                 m_actor = m_role;
                 m_actDic[m_actor] = true;
             }
         }
         else
         {
-            ResetActDic();
             m_actor = m_role;
             m_actDic[m_actor] = true;
         }
